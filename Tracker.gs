@@ -1,6 +1,8 @@
 function doGet() {
-  var output = HtmlService.createHtmlOutputFromFile("Portal.html").setTitle("HSC Points Tracker");
+  var output = HtmlService.createTemplateFromFile("Portal").evaluate();
+  output.setTitle("HSC Points Tracker");
   output.addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  output.setFaviconUrl("https://drive.google.com/uc?id=1IvmnYJP8lV0uRY1WcBDZ-6e_1qd-O0Rw&export=download&format=png");
   return output;
 }
 
@@ -58,4 +60,9 @@ function getEventsForUser(obj) {
   console.log(row, JSON.stringify(out));
 
   return out;
+}
+
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename)
+      .getContent();
 }

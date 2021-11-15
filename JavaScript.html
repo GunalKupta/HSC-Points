@@ -1,0 +1,64 @@
+<script>
+  
+var outputdiv = document.querySelector("#output");
+var textElem = document.getElementById("results");
+var submit = document.getElementById("submitbutton");
+var active = true;
+var footnote = document.querySelector("#footnote");
+
+function getData(obj) {
+  outputdiv.style.visibility = "visible";
+  
+  textElem.style.color = "black";
+  textElem.innerHTML = "Loading... (may take a minute)";
+  var rect = outputdiv.getBoundingClientRect();
+  window.scrollTo(0, rect["y"]);
+  
+  outputdiv.style.border = "3px dashed maroon";
+  google.script.run.withSuccessHandler(processResponse).withFailureHandler(function(e){textElem.innerHTML = e;}).getEventsForUser(obj);
+}
+
+function processResponse(resp) {
+  var paragraph = "";
+  if (!resp.valid) {
+    textElem.innerHTML = "Invalid last name or UIN. Please try again"
+    textElem.style.color = "red";
+    submit.disabled = false;
+    return;
+  }
+  
+  paragraph += "Howdy " + resp.firstname + ",<br>";
+  if (!(resp.fulfilled == "Yes")) {
+    paragraph += "You have not yet fulfilled your HSC membership requirements for this semester. Make sure to check the HSC Weekly email for events you can attend. If you believe this is a mistake, please contact the HSC president at <a href='mailto:tamuhonorsstudentcouncil@gmail.com'>tamuhonorsstudentcouncil@gmail.com</a>.";
+    outputdiv.style.border = "4px solid red";
+  } else {
+    paragraph += "Congratulations! You have fulfilled your HSC membership requirements for this semester."
+    outputdiv.style.border = "4px solid lightgreen";
+  }
+
+  paragraph += "<br>Here is a list of all the HSC-approved points you have earned this semester:<br><ul>"
+  let eventlist = resp.events;
+  if (eventlist.length == 0) {
+    paragraph += "<li>You have not attended any HSC-approved events this semester.</li>";
+  
+  } else {
+    for (let i = 0; i < eventlist.length; i++) {
+      paragraph += "<li>" + eventlist[i] + "</li>";
+    }
+  }
+  paragraph += "</ul>";
+
+  textElem.innerHTML = paragraph;
+  submit.disabled = false;
+  footnote.hidden = false;
+
+  outputdiv.scrollIntoView(true);
+}
+
+document.querySelector("#pointsform").addEventListener('submit', function(event) {
+  event.preventDefault();
+  submit.disabled = true;
+  getData(this);
+});
+
+</script>
