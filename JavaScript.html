@@ -1,31 +1,51 @@
 <script>
-  
-var outputdiv = document.querySelector("#output");
-var textElem = document.getElementById("results");
-var submit = document.getElementById("submitbutton");
-var active = true;
-var footnote = document.querySelector("#footnote");
+let uinInput = document.querySelector("#uin");
+let outputdiv = document.querySelector("#output");
+let textElem = document.querySelector("#results");
+let submit = document.querySelector("#submitbutton");
+let footnote = document.querySelector("#footnote");
+
+document.querySelector("#pointsform").addEventListener('submit', function(event) {
+  event.preventDefault();
+  submit.disabled = true;
+  getData(this);
+});
 
 function getData(obj) {
+
   outputdiv.style.visibility = "visible";
   
   textElem.style.color = "black";
-  textElem.innerHTML = "Loading... (may take a minute)";
-  var rect = outputdiv.getBoundingClientRect();
+  textElem.innerHTML = "Loading...";
+  let rect = outputdiv.getBoundingClientRect();
   window.scrollTo(0, rect["y"]);
   
   outputdiv.style.border = "3px dashed maroon";
-  google.script.run.withSuccessHandler(processResponse).withFailureHandler(function(e){textElem.innerHTML = e;}).getEventsForUser(obj);
+  google.script.run.withSuccessHandler(function(user) {
+    console.log("Got user data: "+JSON.stringify(user));
+    if (!user.valid) {
+      displayInvalid();
+      return;
+    }
+    
+    processResponse(user);
+
+    google.script.run.withSuccessHandler(() => {
+      console.log("logged request");
+    }).logRequest(user);
+      
+  }).withFailureHandler(function(e){textElem.innerHTML = e;}).handleRequest(obj);
 }
 
+function displayInvalid() {
+  textElem.innerHTML = "Invalid last name or UIN. Please try again."
+  textElem.style.color = "red";
+  submit.disabled = false;
+}
+
+// Uses a valid response from server to display styled information including the list of attended events.
 function processResponse(resp) {
-  var paragraph = "";
-  if (!resp.valid) {
-    textElem.innerHTML = "Invalid last name or UIN. Please try again"
-    textElem.style.color = "red";
-    submit.disabled = false;
-    return;
-  }
+  let paragraph = "";
   
   paragraph += "Howdy " + resp.firstname + ",<br>";
   if (!(resp.fulfilled == "Yes")) {
@@ -36,7 +56,7 @@ function processResponse(resp) {
     outputdiv.style.border = "4px solid lightgreen";
   }
 
-  paragraph += "<br>Here is a list of all the HSC-approved points you have earned this semester:<br><ul>"
+  paragraph += "<br>Here is a list of all the HSC-approved points you have earned so far:<br><ul>"
   let eventlist = resp.events;
   if (eventlist.length == 0) {
     paragraph += "<li>You have not attended any HSC-approved events this semester.</li>";
@@ -54,11 +74,5 @@ function processResponse(resp) {
 
   outputdiv.scrollIntoView(true);
 }
-
-document.querySelector("#pointsform").addEventListener('submit', function(event) {
-  event.preventDefault();
-  submit.disabled = true;
-  getData(this);
-});
 
 </script>

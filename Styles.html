@@ -76,11 +76,15 @@ p, li {
   margin: 15px;
 }
 
+#requirements p {
+  font-size: 18px;
+}
 #requirements {
   position: absolute;
   right: 5%;
   top: 100px;
   max-width: 35%;
+  max-height: 325px;
   background-color: #500000;
   color: white;
   padding: 0 5px;
@@ -94,7 +98,7 @@ p, li {
   visibility: hidden;
 }
 
-#footnote {
+#footnote, #footer {
   font-size: 20px;
 }
 
@@ -104,10 +108,11 @@ p, li {
   right: 15px;
   padding: 5px 9px;
   border-radius: 25px;
-  background-color: rgba(255,255,255,0.8);
+  background-color: rgba(255,255,255,0.9);
 }
 
-@media only screen and (max-width: 812px) {
+@media only screen and (max-width: 900px) {
+  
   #headercontent, #requirements {
     max-width: 100%;
     margin: 10px 20px;
@@ -115,6 +120,7 @@ p, li {
   #requirements {
     position: static;
     padding: 5px 10px;
+    max-height: none;
   }
 
   form label, form input, p, li, #requirements p {
@@ -127,7 +133,7 @@ p, li {
     display: none;
   }
 
-  #footnote {
+  #footnote, #footer {
     font-size: 16px;
   }
 }
