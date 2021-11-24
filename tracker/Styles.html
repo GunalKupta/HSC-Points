@@ -2,6 +2,7 @@
 
 body {
   padding-bottom: 50px;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .logo {
@@ -15,7 +16,6 @@ body {
 
 #content {
   margin: 0px 15px;
-  font-family: Arial, Helvetica, sans-serif;
 }
 
 #headercontent {
@@ -75,6 +75,9 @@ p, li {
   line-height: 1.6;
   margin: 15px;
 }
+ul {
+  padding-left: 20px;
+}
 
 #requirements p {
   font-size: 18px;
@@ -96,6 +99,7 @@ p, li {
   border-radius: 10px;
   display: inline-block;
   visibility: hidden;
+  margin: 5px auto;
 }
 
 #footnote, #footer {
@@ -110,9 +114,17 @@ p, li {
   border-radius: 25px;
   background-color: rgba(255,255,255,0.9);
 }
+#footer p {
+  margin: 2px 3px;
+}
+#footer a {
+  font-weight: bold;
+  text-decoration: none;
+  color: #000;
+}
 
 @media only screen and (max-width: 900px) {
-  
+
   #headercontent, #requirements {
     max-width: 100%;
     margin: 10px 20px;
@@ -123,14 +135,23 @@ p, li {
     max-height: none;
   }
 
-  form label, form input, p, li, #requirements p {
+  form label, form input {
     font-size: 18px;
   }
+  p, li, #requirements p {
+    font-size: 16px;
+  }
+
   h1 {
     font-size: 25px;
   }
   .logo {
     display: none;
+  }
+
+  #output p {
+    margin: 8px;
+    word-break: break-word;
   }
 
   #footnote, #footer {
