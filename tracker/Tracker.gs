@@ -1,3 +1,15 @@
+// COLUMNS in Points Masterlist
+// A: UIN
+// B: Last Name
+// C: First Name
+// D: Fulfilled Requirements - Yes/NO
+// E: Total points
+// F: Total ACADEMIC points
+// G: Total SOCIAL points
+// H: Total Submission Form points
+// I: Extra Social points
+// J onward: Individual event reports
+
 let pointsubmission = ss.getSheetByName("Point Submission Form");
 let extrasocial = ss.getSheetByName("Extra Social Points");
 let lastcol = pointssheet.getLastColumn();
