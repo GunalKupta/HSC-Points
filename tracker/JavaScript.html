@@ -25,6 +25,7 @@ function getData(obj) {
     console.log("Got user data: "+JSON.stringify(user));
     if (!user.valid) {
       displayInvalid();
+      google.script.run.logFailure(obj);
       return;
     }
     
@@ -34,7 +35,12 @@ function getData(obj) {
       console.log("logged request");
     }).logRequest(user);
       
-  }).withFailureHandler(function(e){textElem.innerHTML = e;}).handleRequest(obj);
+  }).withFailureHandler(function(e){
+    textElem.innerHTML = "An internal error has occurred."
+    textElem.style.color = "red";
+    obj.e = e;
+    google.script.logFailure(obj);
+  }).handleRequest(obj);
 }
 
 function displayInvalid() {

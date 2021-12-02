@@ -86,9 +86,10 @@ function forceUpdateFormulas() {
   // let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C2:H"),6,false)),0,VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C2:H"),6,false))`;
   let formula = pointssheet.getRange("J4").getFormulaR1C1();
   Logger.log(formula);
-  let range = pointssheet.getRange("J4:AN5062");
+  let range = pointssheet.getRange(4, 10, pointssheet.getLastRow()-3, pointssheet.getLastColumn()-9);
   range.setValue("");
   range.setFormulaR1C1(formula);
+  SpreadsheetApp.flush();
 }
 
 // Deletes all the imported sheets and reimports them

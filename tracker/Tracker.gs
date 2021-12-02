@@ -13,9 +13,10 @@
 let pointsubmission = ss.getSheetByName("Point Submission Form");
 let extrasocial = ss.getSheetByName("Extra Social Points");
 let lastcol = pointssheet.getLastColumn();
+let props = PropertiesService.getDocumentProperties();
 
 function doGet() {
-  let output = HtmlService.createTemplateFromFile("Portal").evaluate();
+  let output = HtmlService.createTemplateFromFile("tracker/Portal").evaluate();
   output.setTitle("HSC Points Tracker");
   output.addMetaTag('viewport', 'width=device-width, initial-scale=1');
   output.setFaviconUrl("https://drive.google.com/uc?id=1IvmnYJP8lV0uRY1WcBDZ-6e_1qd-O0Rw&export=download&format=png");
@@ -40,7 +41,8 @@ function handleRequest(user) {
 // Parses a text file containing a JSON map of UIN -> row in spreadsheet
 // https://stackoverflow.com/a/29347372
 function findRowInFile(uin) {
-  let file = DriveApp.getFileById("15CM7IDyW6-xIcUOqfb7S2tndWNOKwzYz"),
+  let fileId = props.getProperty("lookupFile");
+  let file = DriveApp.getFileById(fileId),
     filedata = file.getBlob().getDataAsString(),
     data = JSON.parse(filedata);
   
@@ -61,7 +63,7 @@ function validateUser(obj) {
 
   let uinrow = findRowInFile(uinNum);
   console.log("Got UIN row "+uinrow);
-  if (uinrow < 2) {
+  if (!uinrow || uinrow < 2) {
     return null;
   }
 
@@ -167,21 +169,39 @@ function createLookupFile() {
   for (let i = 0; i < data.length; i++) {
     out[data[i][0]] = i+4;
   }
-  console.log(DriveApp.createFile("user_row", JSON.stringify(out), MimeType.PLAIN_TEXT).getId());
+  let folder = DriveApp.getFolderById("1DIiSrBIFg7oxeywkT7PnUsPnbaqa5TGX"); // HSC Artifacts folder
+  let newFile = DriveApp.createFile("member_row", JSON.stringify(out), MimeType.PLAIN_TEXT);
+  props.setProperty("lookupFile", newFile.getId());
+  newFile.moveTo(folder);
+  console.log(newFile.getId());
 }
 
-// Log requests that are made using the web app to track usage
-function logRequest(req) {
+// Get the next row for logging a request
+function setUpLog() {
   let logsheet = ss.getSheetByName("Request Log")
   let lastrow = logsheet.getLastRow();
   logsheet.insertRowAfter(lastrow);
   let range = logsheet.getRange(lastrow+1,1,1,5);
+  range.setBackground("white");
+  return range;
+}
+
+// Log requests that are made using the web app to track usage
+function logRequest(req) {
+  let range = setUpLog();
 
   range.setValues([[new Date().toLocaleString(), req.uin, req.firstname+" "+req.lastname, req.fulfilled, JSON.stringify(req.events)]])
-  console.log("Logged request", lastrow);
+  // console.log("Logged request");
+}
+
+function logFailure(req) {
+  let range = setUpLog();
+
+  range.setValues([[new Date().toLocaleString(), JSON.stringify(req), "", "", ""]]);
+  range.setBackground("red");
 }
 
 function include(filename) {
-  return HtmlService.createHtmlOutputFromFile(filename)
+  return HtmlService.createHtmlOutputFromFile("tracker/"+filename)
     .getContent();
 }
