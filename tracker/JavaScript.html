@@ -25,7 +25,9 @@ function getData(obj) {
     console.log("Got user data: "+JSON.stringify(user));
     if (!user.valid) {
       displayInvalid();
-      google.script.run.logFailure(obj);
+      google.script.run.withSuccessHandler(function() {
+        console.log("logged request");
+      }).logFailure(obj);
       return;
     }
     

@@ -63,7 +63,7 @@ function validateUser(obj) {
 
   let uinrow = findRowInFile(uinNum);
   console.log("Got UIN row "+uinrow);
-  if (!uinrow || uinrow < 2) {
+  if (!uinrow || uinrow < 4) {
     return null;
   }
 
@@ -182,7 +182,6 @@ function setUpLog() {
   let lastrow = logsheet.getLastRow();
   logsheet.insertRowAfter(lastrow);
   let range = logsheet.getRange(lastrow+1,1,1,5);
-  range.setBackground("white");
   return range;
 }
 
@@ -191,17 +190,23 @@ function logRequest(req) {
   let range = setUpLog();
 
   range.setValues([[new Date().toLocaleString(), req.uin, req.firstname+" "+req.lastname, req.fulfilled, JSON.stringify(req.events)]])
-  // console.log("Logged request");
+  range.setBackground("white");
+  range.setFontColor("black");
 }
 
 function logFailure(req) {
   let range = setUpLog();
 
-  range.setValues([[new Date().toLocaleString(), JSON.stringify(req), "", "", ""]]);
+  range.setValues([[new Date().toLocaleString(), JSON.stringify(req), "", "", "Invalid Request"]]);
   range.setBackground("red");
+  range.setFontColor("white");
 }
 
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile("tracker/"+filename)
     .getContent();
+}
+
+function outputLookupFile() {
+  console.log(props.getProperty("lookupFile"));
 }
