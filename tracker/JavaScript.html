@@ -38,8 +38,9 @@ function getData(obj) {
     }).logRequest(user);
       
   }).withFailureHandler(function(e){
-    textElem.innerHTML = "An internal error has occurred."
+    textElem.innerHTML = "An internal error has occurred. Please try again later."
     textElem.style.color = "red";
+    submit.disabled = false;
     obj.e = e;
     google.script.logFailure(obj);
   }).handleRequest(obj);

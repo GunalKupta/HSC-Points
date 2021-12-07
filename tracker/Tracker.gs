@@ -176,10 +176,12 @@ function createLookupFile() {
   console.log(newFile.getId());
 }
 
+let lock = LockService.getDocumentLock();
 // Get the next row for logging a request
 function setUpLog() {
   let logsheet = ss.getSheetByName("Request Log")
   let lastrow = logsheet.getLastRow();
+  lock.waitLock(10000);
   logsheet.insertRowAfter(lastrow);
   let range = logsheet.getRange(lastrow+1,1,1,5);
   return range;
@@ -192,6 +194,8 @@ function logRequest(req) {
   range.setValues([[new Date().toLocaleString(), req.uin, req.firstname+" "+req.lastname, req.fulfilled, JSON.stringify(req.events)]])
   range.setBackground("white");
   range.setFontColor("black");
+  SpreadsheetApp.flush();
+  lock.releaseLock();
 }
 
 function logFailure(req) {
@@ -200,6 +204,8 @@ function logFailure(req) {
   range.setValues([[new Date().toLocaleString(), JSON.stringify(req), "", "", "Invalid Request"]]);
   range.setBackground("red");
   range.setFontColor("white");
+  SpreadsheetApp.flush();
+  lock.releaseLock();
 }
 
 function include(filename) {
