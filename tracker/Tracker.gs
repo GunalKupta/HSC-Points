@@ -10,8 +10,8 @@
 // I: Extra Social points
 // J onward: Individual event reports
 
-let pointsubmission = ss.getSheetByName("Point Submission Form");
-let extrasocial = ss.getSheetByName("Extra Social Points");
+let maroonbaseexcess = ss.getSheetByName("MaroonBase Excess");
+let outsideevents = ss.getSheetByName("Outside Events");
 let lastcol = pointssheet.getLastColumn();
 let props = PropertiesService.getDocumentProperties();
 
@@ -108,43 +108,81 @@ function getEventsForUser(userrow) {
     }
 
     if (c == 7) {
-      // Point Submission Form: find events linked to uin
-      indirectdata = pointsubmission.getRange(2,3,pointsubmission.getLastRow()-1,7).getValues();
+      // MaroonBase Excess: find events linked to uin
+      indirectdata = maroonbaseexcess.getRange(2,4,maroonbaseexcess.getLastRow()-1,5).getValues();
       rowsFromUin = getRowsFromUin(uin, indirectdata);
+      let categories;
       for (let i = 0; i < rowsFromUin.length; i++) {
-        rawdate = new Date(rowsFromUin[i][4]);
-        rawdate.setFullYear(2021);
+        rawdate = new Date(rowsFromUin[i][2]);
+        rawdate.setFullYear(2022);
         date = rawdate.toLocaleDateString();
-        eventname = date + " - (Point Submission Form) " + rowsFromUin[i][2] + " - <b>ACADEMIC</b>";
-        console.log("Point Submission result: " + eventname);
-        events.push(eventname.trim());
+        categories = rowsFromUin[i][4].split(',');
+        if (categories.includes("Listed in Weekly Email") || categories.includes("None of the Above")) {
+          eventname = `${date} - ${rowsFromUin[i][1]} - <b>ACADEMIC</b>`;
+        } else {
+          eventname = `${date} - ${categories[0]}: ${rowsFromUin[i][1]} - <b>ACADEMIC</b>`;
+        }
+        console.log("MaroonBase Excess result: " + eventname);
+        events.push({
+          'date': date,
+          'event': eventname.trim()
+        });
       }
-
     } else if (c == 8) {
-      // Extra Social Points: find events linked to uin
-      indirectdata = extrasocial.getRange(2,3,extrasocial.getLastRow()-1,6).getValues();
+      // Outside Events: find events linked to uin
+      indirectdata = outsideevents.getRange(2,4,outsideevents.getLastRow()-1,3).getValues();
       rowsFromUin = getRowsFromUin(uin, indirectdata);
       for (let i = 0; i < rowsFromUin.length; i++) {
         rawdate = new Date(rowsFromUin[i][2]);
-        rawdate.setFullYear(2021);
+        rawdate.setFullYear(2022);
         date = rawdate.toLocaleDateString();
-        eventname = date + " - " + rowsFromUin[i][3] + " - <b>SOCIAL</b>"
-        events.push(eventname.trim());
+        eventname = `${date} - ${rowsFromUin[i][1]} - <b>ACADEMIC</b>`;
+        console.log("Outside Events result: " + eventname);
+        events.push({
+          'date': date,
+          'event': eventname.trim()
+        });
       }
+
+
+    } else if (c == 9) {
+      // Extra Social Points: find events linked to uin
+      // Sheet does not exist yet
+      
+      // indirectdata = outsideevents.getRange(2,3,outsideevents.getLastRow()-1,6).getValues();
+      // rowsFromUin = getRowsFromUin(uin, indirectdata);
+      // for (let i = 0; i < rowsFromUin.length; i++) {
+      //   rawdate = new Date(rowsFromUin[i][2]);
+      //   rawdate.setFullYear(2022);
+      //   date = rawdate.toLocaleDateString();
+      //   eventname = date + " - " + rowsFromUin[i][3] + " - <b>SOCIAL</b>"
+      //   events.push(eventname.trim());
+      // }
 
     } else {
       // Regular event: get data from header columns
-      eventname = names[c] + " - <b>" + (social[c] ? "SOCIAL" : "ACADEMIC") + "</b>";
       rawdate = new Date(dates[c]);
-      rawdate.setFullYear(2021);
+      rawdate.setFullYear(2022);
       date = rawdate.toLocaleDateString();
-      // if (date != "Invalid Date") {
-        eventname = date + " - " + eventname;
-      // }
-      events.push(eventname.trim());
+      eventname = `${date} - ${names[c]} - <b>${(social[c] ? "SOCIAL" : "ACADEMIC")}</b>`;
+      if (points > 100) {
+        eventname = `${eventname} (x${points/100})`;
+      }
+      events.push({
+        'date': date,
+        'event': eventname.trim()
+      });
     }
   }
-  out.events = events;
+
+  // sort events by date
+  events.sort((a, b) => {
+    return new Date(a.date) - new Date(b.date);
+  })
+  let sortedEvents = []
+  events.forEach(e => {sortedEvents.push(e.event)});
+  
+  out.events = sortedEvents;
   console.log(JSON.stringify(out));
 
   return out;
@@ -164,13 +202,13 @@ function getRowsFromUin(uin, data) {
 // Convert the first column of the masterlist into a JSON map
 // to make searching for a UIN in the sheet much faster
 function createLookupFile() {
-  let data = pointssheet.getRange(4,1,5062-3).getValues();
+  let data = pointssheet.getRange(4,1,pointssheet.getLastRow()-3).getValues();
   let out = {};
   for (let i = 0; i < data.length; i++) {
     out[data[i][0]] = i+4;
   }
   let folder = DriveApp.getFolderById("1DIiSrBIFg7oxeywkT7PnUsPnbaqa5TGX"); // HSC Artifacts folder
-  let newFile = DriveApp.createFile("member_row", JSON.stringify(out), MimeType.PLAIN_TEXT);
+  let newFile = DriveApp.createFile("member_row_spring2022", JSON.stringify(out), MimeType.PLAIN_TEXT);
   props.setProperty("lookupFile", newFile.getId());
   newFile.moveTo(folder);
   console.log(newFile.getId());

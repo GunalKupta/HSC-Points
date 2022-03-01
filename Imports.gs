@@ -37,9 +37,9 @@ function onFormSubmit(e) {
 
 // Create a new sheet and use built-in IMPORTRANGE function
 function importSheet(url, title) {
+  addImportRangePermission(url);
   let newsheet = ss.insertSheet(title);
   newsheet.getRange("A1").setFormula(`=IMPORTRANGE("${url}", "A:H")`);
-  addImportRangePermission(url);
   return newsheet;
 }
 
@@ -73,7 +73,7 @@ function addImportRangePermission(url) {
 function extendFormula() {
   let lastcol = pointssheet.getLastColumn();
   console.log("Last col = " + lastcol);
-  let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C2:H"),6,false)),0,VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C2:H"),6,false))`;
+  let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C:C"),1,false)),0,IF(ISNA(MATCH("pointsEarned",INDIRECT(R2C[0]&"!A1:1"),0)),100,VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C:I"),MINUS(MATCH("pointsEarned",INDIRECT(R2C[0]&"!A1:1"),0),MATCH("uin",INDIRECT(R2C[0]&"!A1:1"),0))+1,false)))`;
   console.log("Formula recorded = " + formula);
   let destrange = pointssheet.getRange(4, lastcol, pointssheet.getLastRow()-3);
   destrange.setFormulaR1C1(formula);
@@ -83,10 +83,11 @@ function extendFormula() {
 // Clears most of the main points formulas on the master list
 // and replaces them with the same formula to force-refresh any changes.
 function forceUpdateFormulas() {
-  // let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C2:H"),6,false)),0,VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C2:H"),6,false))`;
-  let formula = pointssheet.getRange("J4").getFormulaR1C1();
+  // let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C:C"),1,false)),0,IF(ISNA(MATCH("pointsEarned",INDIRECT(R2C[0]&"!A1:1"),0)),100,VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C:I"),MINUS(MATCH("pointsEarned",INDIRECT(R2C[0]&"!A1:1"),0),MATCH("uin",INDIRECT(R2C[0]&"!A1:1"),0))+1,false)))`;
+  let formula = pointssheet.getRange("K4").getFormulaR1C1();
   Logger.log(formula);
-  let range = pointssheet.getRange(4, 10, pointssheet.getLastRow()-3, pointssheet.getLastColumn()-9);
+  Logger.log(pointssheet.getLastColumn());
+  let range = pointssheet.getRange(4, 11, pointssheet.getLastRow()-3, pointssheet.getLastColumn()-10);
   range.setValue("");
   range.setFormulaR1C1(formula);
   SpreadsheetApp.flush();

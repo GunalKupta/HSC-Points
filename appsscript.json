@@ -1,7 +1,7 @@
 {
   "timeZone": "America/Chicago",
   "dependencies": {},
-  "exceptionLogging": "NONE",
+  "exceptionLogging": "STACKDRIVER",
   "runtimeVersion": "V8",
   "webapp": {
     "executeAs": "USER_DEPLOYING",
