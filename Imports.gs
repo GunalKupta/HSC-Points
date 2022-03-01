@@ -109,33 +109,3 @@ function resetImports() {
 
 }
 
-// function preexistingSheets() {
-//   let form = FormApp.openById("1VbP__lU4eXyfT0gGd7Ot9E7dBqZUYPW5S5Q9V-6KqSk");
-//   let formitems = form.getItems();
-//   let folder = DriveApp.getFolderById("11jDE4v9YorSmY-_unqssu9bnojSL165P");
-//   let files = folder.getFiles()
-//   while (files.hasNext()) {
-//     let resp = form.createResponse();
-//     let file = files.next();
-//     let fulltitle = file.getName().split();
-//     let date = fulltitle[0];
-//     resp.withItemResponse();
-
-//   }
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
