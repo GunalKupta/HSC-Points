@@ -1,87 +1,104 @@
 <script>
-let uinInput = document.querySelector("#uin");
-let outputdiv = document.querySelector("#output");
-let textElem = document.querySelector("#results");
-let submit = document.querySelector("#submitbutton");
-let footnote = document.querySelector("#footnote");
+  let uinInput = document.querySelector("#uin");
+  let outputdiv = document.querySelector("#output");
+  let textElem = document.querySelector("#results");
+  let submit = document.querySelector("#submitbutton");
+  let footnote = document.querySelector("#footnote");
 
-document.querySelector("#pointsform").addEventListener('submit', function(event) {
-  event.preventDefault();
-  submit.disabled = true;
-  getData(this);
-});
+  document
+    .querySelector("#pointsform")
+    .addEventListener("submit", function (event) {
+      event.preventDefault();
+      submit.disabled = true;
+      getData(this);
+    });
 
-function getData(obj) {
+  function getData(obj) {
+    outputdiv.style.visibility = "visible";
 
-  outputdiv.style.visibility = "visible";
-  
-  textElem.style.color = "black";
-  textElem.innerHTML = "Loading...";
-  let rect = outputdiv.getBoundingClientRect();
-  window.scrollTo(0, rect["y"]);
-  
-  outputdiv.style.border = "3px dashed maroon";
-  google.script.run.withSuccessHandler(function(user) {
-    console.log("Got user data: "+JSON.stringify(user));
-    if (!user.valid) {
-      displayInvalid();
-      google.script.run.withSuccessHandler(function() {
-        console.log("logged request");
-      }).logFailure(obj);
-      return;
-    }
-    
-    processResponse(user);
+    textElem.style.color = "black";
+    textElem.innerHTML = "Loading (may take up to a minute)...";
+    let rect = outputdiv.getBoundingClientRect();
+    window.scrollTo(0, rect["y"]);
 
-    google.script.run.withSuccessHandler(() => {
-      console.log("logged request");
-    }).logRequest(user);
-      
-  }).withFailureHandler(function(e){
-    textElem.innerHTML = "An internal error has occurred. Please try again later."
+    outputdiv.style.border = "3px dashed maroon";
+    google.script.run
+      .withSuccessHandler(function (user) {
+        // console.log("Got user data: "+JSON.stringify(user));
+        if (!user.valid) {
+          displayInvalid();
+          google.script.run
+            .withSuccessHandler(function () {
+              // console.log("logged request");
+            })
+            .logFailure(obj);
+          return;
+        }
+
+        processResponse(user);
+
+        google.script.run
+          .withSuccessHandler(() => {
+            // console.log("logged request");
+          })
+          .logRequest(user);
+      })
+      .withFailureHandler(function (e) {
+        textElem.innerHTML =
+          "An internal error has occurred. Please try again later.";
+        textElem.style.color = "red";
+        submit.disabled = false;
+        obj.e = e;
+        google.script.logFailure(obj);
+      })
+      .handleRequest(obj);
+  }
+
+  function displayInvalid() {
+    textElem.innerHTML = "Invalid last name or UIN. Please try again.";
     textElem.style.color = "red";
     submit.disabled = false;
-    obj.e = e;
-    google.script.logFailure(obj);
-  }).handleRequest(obj);
-}
-
-function displayInvalid() {
-  textElem.innerHTML = "Invalid last name or UIN. Please try again."
-  textElem.style.color = "red";
-  submit.disabled = false;
-}
-
-// Uses a valid response from server to display styled information including the list of attended events.
-function processResponse(resp) {
-  let paragraph = "";
-  
-  paragraph += "Howdy " + resp.firstname + ",<br>";
-  if (!(resp.fulfilled == "Yes")) {
-    paragraph += "You have not fulfilled your HSC membership requirements for this semester. Make sure to check the HSC Weekly email for events you can attend. If you believe this is a mistake, please contact the HSC president at <a href='mailto:tamuhonorsstudentcouncil@gmail.com'>tamuhonorsstudentcouncil@gmail.com</a>.";
-    outputdiv.style.border = "4px solid red";
-  } else {
-    paragraph += "Congratulations! You fulfilled your HSC membership requirements for this semester."
-    outputdiv.style.border = "4px solid lightgreen";
   }
 
-  paragraph += "<br>Here is a list of all the HSC-approved points you earned:<br><ul>"
-  let eventlist = resp.events;
-  if (eventlist.length == 0) {
-    paragraph += "<li>You did not attend any HSC-approved events this semester.</li>";
-  
-  } else {
-    for (let i = 0; i < eventlist.length; i++) {
-      paragraph += "<li>" + eventlist[i] + "</li>";
+  // Uses a valid response from server to display styled information including the list of attended events.
+  function processResponse(resp) {
+    let paragraph = "";
+
+    paragraph += "<p>Howdy " + resp.firstname + ",</p>";
+    if (!resp.fulfilled) {
+      paragraph +=
+        "<p>You have not yet fulfilled your HSC membership requirements for this semester. Make sure to check the HSC weekly email for events you can attend. If you believe this is a mistake, review the event check-in instructions at <a href='https://tx.ag/HSCMaroonBase' target='_blank'>tx.ag/HSCMaroonBase</a> and contact the HSC president at <a href='mailto:tamuhonorsstudentcouncil@gmail.com'>tamuhonorsstudentcouncil@gmail.com</a>. The most common mistake is checking in for events through the wrong group on MaroonBase, in which case include a screenshot of your \"Attended Events\" section as proof of attendance.</p>";
+      outputdiv.style.border = "4px solid red";
+    } else {
+      paragraph +=
+        "<p>Congratulations! You fulfilled your HSC membership requirements for this semester.</p>";
+      outputdiv.style.border = "4px solid lightgreen";
     }
+
+    paragraph +=
+      "<p>Here is a list of all the HSC-approved points you earned so far:<p>";
+    let eventlist = resp.events;
+    if (eventlist.length == 0) {
+      paragraph +=
+        "<ul><li>You did not attend any HSC-approved events this semester.</li></ul>";
+    } else {
+      // IMPLEMENT TABLE
+      paragraph += `<table class="eventstable"><tr><th>Date</th><th>Event Title</th><th class="cell-category">Category</th></tr>`;
+      for (let i = 0; i < eventlist.length; i++) {
+        let e = eventlist[i];
+        paragraph += `<tr><td class="cell-date">${e.date}</td><td>${
+          e.event
+        }</td><td class="cell-category">${e.social ? "Social" : "Academic"}${
+          e.points > 1 ? ` (x${e.points})` : ""
+        }</td></tr>`;
+      }
+      paragraph += "</table>";
+    }
+
+    textElem.innerHTML = paragraph;
+    submit.disabled = false;
+    footnote.hidden = false;
+
+    outputdiv.scrollIntoView(true);
   }
-  paragraph += "</ul>";
-
-  textElem.innerHTML = paragraph;
-  submit.disabled = false;
-  footnote.hidden = false;
-
-  outputdiv.scrollIntoView(true);
-}
-
 </script>

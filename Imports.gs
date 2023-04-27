@@ -1,17 +1,7 @@
-// COLUMNS in Points Masterlist
-// A: UIN
-// B: Last Name
-// C: First Name
-// D: Fulfilled Requirements - Yes/NO
-// E: Total points
-// F: Total ACADEMIC points
-// G: Total SOCIAL points
-// H: Total Submission Form points
-// I: Extra Social points
-// J onward: Individual event reports
-
 let ss = SpreadsheetApp.getActiveSpreadsheet();
-let pointssheet = ss.getSheetByName("Points");  // Points Masterlist
+let pointssheet = ss.getSheetByName("Masterlist"); // Points Masterlist
+
+var frozenRows = 4;
 
 // NOTE: Form submission triggers version #, not head deployment
 
@@ -19,33 +9,54 @@ let pointssheet = ss.getSheetByName("Points");  // Points Masterlist
 // sheet into a new tab of the masterlist spreadsheet, then
 // hide the new sheet.
 function onFormSubmit(e) {
-  let vals = e.values
-  let title = vals[3]
-  let url = vals[2]
+  let vals = e.namedValues;
+  if (vals["Spreadsheet URL"] == undefined) {
+    return;
+  }
+  vals = e.values;
+  let rawdate = new Date(vals[0].trim());
+  rawdate.setFullYear(new Date().getFullYear());
+  let date = rawdate.toLocaleDateString();
+  let url = vals[4].trim();
+  let title = vals[1].trim();
+  let social = vals[2].trim();
+  let timestamp = new Date(vals[3]);
+  let id = String(timestamp.getTime());
 
-  let newsheet = importSheet(url, title);
+  console.log(JSON.stringify(vals));
 
-  console.log("Imported sheet " + newsheet.getName());
+  let newsheet = importSheet(url, id, title, date);
+
+  let idsSheet = ss.getSheetByName("Event IDs");
+  idsSheet.appendRow([date, title, social, id, url]);
+
+  console.log(`Imported sheet ${newsheet.getName()}\nEvent: ${title}`);
   newsheet.hideSheet();
-  
+
   SpreadsheetApp.flush();
 
   extendFormula();
-
   pointssheet.insertColumnAfter(pointssheet.getLastColumn());
 }
 
 // Create a new sheet and use built-in IMPORTRANGE function
-function importSheet(url, title) {
+function importSheet(url, id, title, date) {
   addImportRangePermission(url);
-  let newsheet = ss.insertSheet(title);
-  newsheet.getRange("A1").setFormula(`=IMPORTRANGE("${url}", "A:H")`);
+  let newsheet = ss.insertSheet(id);
+  let numcols = SpreadsheetApp.openByUrl(url).getLastColumn();
+  newsheet
+    .getRange("A1")
+    .setFormula(
+      `=IMPORTRANGE("${url}","A:${String.fromCharCode(64 + numcols)}")`
+    );
+  newsheet.getRange(1, numcols + 1).setValue(url);
   return newsheet;
 }
 
 // Connect donor sheet with masterlist spreadsheet so that IMPORTRANGE
 // is authorized
 function addImportRangePermission(url) {
+  console.log("opening URL: " + url);
   const donorId = SpreadsheetApp.openByUrl(url).getId();
   const ssId = ss.getId();
 
@@ -56,13 +67,13 @@ function addImportRangePermission(url) {
   const token = ScriptApp.getOAuthToken();
 
   const params = {
-    method: 'post',
+    method: "post",
     headers: {
-      Authorization: 'Bearer ' + token,
+      Authorization: "Bearer " + token,
     },
-    muteHttpExceptions: true
+    muteHttpExceptions: true,
   };
-  
+
   let resp = UrlFetchApp.fetch(permurl, params);
   console.log("Added permissions: " + JSON.stringify(resp));
 }
@@ -73,39 +84,48 @@ function addImportRangePermission(url) {
 function extendFormula() {
   let lastcol = pointssheet.getLastColumn();
   console.log("Last col = " + lastcol);
-  let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C:C"),1,false)),0,IF(ISNA(MATCH("pointsEarned",INDIRECT(R2C[0]&"!A1:1"),0)),100,VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C:I"),MINUS(MATCH("pointsEarned",INDIRECT(R2C[0]&"!A1:1"),0),MATCH("uin",INDIRECT(R2C[0]&"!A1:1"),0))+1,false)))`;
+
+  let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R4C[0]&"!C:C"),1,false)),0,IF(ISNA(MATCH("pointsEarned",INDIRECT(R4C[0]&"!A1:1"),0)),100,VLOOKUP(R[0]C1,INDIRECT(R4C[0]&"!C:I"),MINUS(MATCH("pointsEarned",INDIRECT(R4C[0]&"!A1:1"),0),MATCH("uin",INDIRECT(R4C[0]&"!A1:1"),0))+1,false)))`;
   console.log("Formula recorded = " + formula);
-  let destrange = pointssheet.getRange(4, lastcol, pointssheet.getLastRow()-3);
+  let destrange = pointssheet.getRange(
+    frozenRows + 1,
+    lastcol,
+    pointssheet.getLastRow() - frozenRows - 1
+  );
   destrange.setFormulaR1C1(formula);
   console.log("Formulas updated");
+
+  // let countformula = `=COUNTIF(R[-4044]C[0]:R[-1]C[0], ">0")`;
+  let countformula = pointssheet.getRange("L3932").getFormulaR1C1();
+  destrange = pointssheet.getRange(pointssheet.getLastRow(), lastcol);
+  destrange.setFormula(countformula);
 }
 
 // Clears most of the main points formulas on the master list
 // and replaces them with the same formula to force-refresh any changes.
 function forceUpdateFormulas() {
-  // let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C:C"),1,false)),0,IF(ISNA(MATCH("pointsEarned",INDIRECT(R2C[0]&"!A1:1"),0)),100,VLOOKUP(R[0]C1,INDIRECT(R2C[0]&"!C:I"),MINUS(MATCH("pointsEarned",INDIRECT(R2C[0]&"!A1:1"),0),MATCH("uin",INDIRECT(R2C[0]&"!A1:1"),0))+1,false)))`;
-  let formula = pointssheet.getRange("K4").getFormulaR1C1();
+  // let formula = `=IF(ISNA(VLOOKUP(R[0]C1,INDIRECT(R4C[0]&"!C:C"),1,false)),0,IF(ISNA(MATCH("pointsEarned",INDIRECT(R4C[0]&"!A1:1"),0)),100,VLOOKUP(R[0]C1,INDIRECT(R4C[0]&"!C:I"),MINUS(MATCH("pointsEarned",INDIRECT(R4C[0]&"!A1:1"),0),MATCH("uin",INDIRECT(R4C[0]&"!A1:1"),0))+1,false)))`;
+  let formula = pointssheet.getRange("J5").getFormulaR1C1();
   Logger.log(formula);
   Logger.log(pointssheet.getLastColumn());
-  let range = pointssheet.getRange(4, 11, pointssheet.getLastRow()-3, pointssheet.getLastColumn()-10);
+  let range = pointssheet.getRange(
+    frozenRows + 1,
+    10,
+    pointssheet.getLastRow() - frozenRows - 1,
+    pointssheet.getLastColumn() - 9
+  );
   range.setValue("");
   range.setFormulaR1C1(formula);
+
+  let countformula = `=COUNTIF(R[-3926]C[0]:R[-1]C[0], ">0")`;
+  let destrange = pointssheet.getRange(
+    pointssheet.getLastRow(),
+    pointssheet.getLastColumn()
+  );
+  destrange.setFormula(countformula);
   SpreadsheetApp.flush();
 }
 
-// Deletes all the imported sheets and reimports them
-function resetImports() {
-  let data = ss.getSheetByName("Imports").getDataRange().getValues();
-  for (let row = 1; row < data.length; row++) {
-    let url = data[row][2];
-    let title = data[row][3];
-    let sheet = ss.getSheetByName(title);
-    Logger.log(sheet.getName());
-    ss.deleteSheet(sheet);
-
-    let newsheet = importSheet(url, title)
-    newsheet.hideSheet();
-  }
-
+function test() {
+  Logger.log(pointssheet.getRange("U3931").getFormulaR1C1());
 }
-

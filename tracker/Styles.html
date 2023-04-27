@@ -1,169 +1,201 @@
 <style>
-
-body {
-  padding-bottom: 50px;
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-.logo {
-  width: 75px;
-  height: 75px;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  object-fit: contain;
-}
-
-#content {
-  margin: 0px 15px;
-}
-
-#headercontent {
-  display: inline-block;
-  max-width: 55%;
-}
-
-h1 {
-  font-size: 2.7vmax;
-  margin: 10px;
-  color: #500000;
-  line-height: 1.5;
-}
-
-form {
-  /* display: inline-block; */
-  border-radius: 8px;
-  background-color: #f0f0f0;
-  padding: 15px;
-  margin-bottom: 10px;
-  line-height: 2.2;
-}
-label, input {
-  font-size: 1.8vmax;
-}
-input[type=text], select {
-  width: 100%;
-  padding: 15px 15px;
-  margin: 8px 0;
-  display: inline-block;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-input[type=submit] {
-  width: 50%;
-  background-color: maroon;
-  color: white;
-  padding: 14px 20px;
-  margin: 8px auto;
-  border-radius: 4px;
-  cursor: pointer;
-}
-input[type=submit]:hover {
-  background-color: rgb(80,0,0);
-}
-input[type=submit]:disabled {
-  background-color: rgb(200,100,100);
-  cursor: default;
-}
-.centercontent {
-  text-align: center;
-}
-
-p, li {
-  font-size: 1.6vmax;
-  line-height: 1.6;
-  margin: 15px;
-}
-ul {
-  padding-left: 20px;
-}
-
-#requirements p {
-  font-size: 18px;
-}
-#requirements {
-  position: absolute;
-  right: 5%;
-  top: 100px;
-  max-width: 35%;
-  max-height: 325px;
-  background-color: #500000;
-  color: white;
-  padding: 0 5px;
-  border-radius: 20px;
-  text-align: center;
-}
-
-#output {
-  border: 2px dashed maroon;
-  border-radius: 10px;
-  display: inline-block;
-  visibility: hidden;
-  margin: 5px auto;
-}
-
-#footnote {
-  font-size: 20px;
-}
-
-#footer {
-  position: fixed;
-  bottom: 15px;
-  right: 15px;
-  padding: 5px 12px;
-  border-radius: 25px;
-  background-color: rgba(255,255,255,0.9);
-}
-#footer:hover {
-  background-color: rgba(0,0,0,0.15);
-}
-#footer p {
-  font-size: 1.85vmax;
-  margin: 2px 3px;
-}
-#footer a {
-  text-decoration: none;
-  color: #000;
-}
-
-@media only screen and (max-width: 900px) {
-
-  #headercontent, #requirements {
-    max-width: 100%;
-    margin: 10px 20px;
-  }
-  #requirements {
-    position: static;
-    padding: 5px 10px;
-    max-height: none;
+  body {
+    padding-bottom: 80px;
+    font-family: Arial, Helvetica, sans-serif;
   }
 
-  form label, form input {
-    font-size: 18px;
+  .logo {
+    width: 90px;
+    height: 90px;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    object-fit: contain;
+    border-radius: 5px;
   }
-  p, li, #requirements p {
-    font-size: 16px;
+
+  #content {
+    margin: 0px 15px;
+  }
+
+  #headercontent {
+    display: inline-block;
+    max-width: 55%;
   }
 
   h1 {
-    font-size: 25px;
-  }
-  .logo {
-    display: none;
+    font-size: 2.7vmax;
+    margin: 10px;
+    color: #500000;
+    line-height: 1.5;
   }
 
-  #output p {
-    margin: 8px;
-    word-break: break-word;
+  form {
+    /* display: inline-block; */
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    padding: 15px;
+    margin-bottom: 10px;
+    line-height: 2.2;
+  }
+  label,
+  input {
+    font-size: 18px;
+  }
+  input[type="text"],
+  select {
+    width: 100%;
+    padding: 15px 15px;
+    margin: 8px 4px;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
+  input[type="submit"] {
+    width: 50%;
+    background-color: maroon;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px auto;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  input[type="submit"]:hover {
+    background-color: rgb(80, 0, 0);
+  }
+  input[type="submit"]:disabled {
+    background-color: rgb(200, 100, 100);
+    cursor: default;
+  }
+  .centercontent {
+    text-align: center;
+  }
+
+  p,
+  li {
+    font-size: 18px;
+    line-height: 1.5;
+    margin: 15px;
+  }
+  ul {
+    padding-left: 20px;
+  }
+
+  #requirements {
+    position: absolute;
+    right: 8%;
+    top: 100px;
+    max-width: 35%;
+    max-height: 325px;
+    background-color: #500000;
+    color: white;
+    padding: 0 5px;
+    border-radius: 20px;
+    text-align: center;
+  }
+
+  #output {
+    border: 2px dashed maroon;
+    border-radius: 10px;
+    display: inline-block;
+    visibility: hidden;
+    margin: 5px auto;
   }
 
   #footnote {
-    font-size: 16px;
-  }
-  #footer p {
     font-size: 20px;
   }
-}
 
+  #footer {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    padding: 2px 10px;
+    border-radius: 10px;
+    background-color: rgba(255, 255, 255, 0.9);
+  }
+  #footer:hover {
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+  #footer p {
+    margin: 2px;
+  }
+  #footer a {
+    text-decoration: none;
+    color: #000;
+  }
+
+  .eventstable {
+    margin: 10px;
+    table-layout: auto;
+  }
+
+  .eventstable,
+  .eventstable th,
+  .eventstable td {
+    border: 1px solid black;
+    border-collapse: collapse;
+    padding: 15px;
+  }
+
+  /* .cell-date {
+        min-width: 64px;
+      }
+      .cell-category {
+        min-width: 75px;
+      } */
+
+  @media only screen and (max-width: 550px) {
+    #headercontent,
+    #requirements {
+      max-width: 100%;
+      margin: 10px 20px;
+    }
+    #requirements {
+      position: static;
+      padding: 5px 10px;
+      max-height: none;
+    }
+
+    form label,
+    form input {
+      font-size: 18px;
+    }
+    p,
+    li,
+    #requirements p {
+      font-size: 16px;
+    }
+
+    h1 {
+      font-size: 25px;
+    }
+    .logo {
+      display: none;
+    }
+
+    #output p {
+      margin: 8px;
+      word-break: break-word;
+    }
+
+    #footnote {
+      font-size: 16px;
+    }
+    #footer p {
+      font-size: 14px;
+    }
+
+    .eventstable {
+      margin: 2px;
+      width: 100%;
+      font-size: 12px;
+    }
+    .eventstable,
+    .eventstable th,
+    .eventstable td {
+      padding: 5px;
+    }
+  }
 </style>

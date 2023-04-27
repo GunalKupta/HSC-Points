@@ -1,25 +1,13 @@
-// COLUMNS in Points Masterlist
-// A: UIN
-// B: Last Name
-// C: First Name
-// D: Fulfilled Requirements - Yes/NO
-// E: Total points
-// F: Total ACADEMIC points
-// G: Total SOCIAL points
-// H: Total Submission Form points
-// I: Extra Social points
-// J onward: Individual event reports
-
-let maroonbaseexcess = ss.getSheetByName("MaroonBase Excess");
-let outsideevents = ss.getSheetByName("Outside Events");
 let lastcol = pointssheet.getLastColumn();
 let props = PropertiesService.getDocumentProperties();
 
 function doGet() {
   let output = HtmlService.createTemplateFromFile("tracker/Portal").evaluate();
   output.setTitle("HSC Points Tracker");
-  output.addMetaTag('viewport', 'width=device-width, initial-scale=1');
-  output.setFaviconUrl("https://drive.google.com/uc?id=1IvmnYJP8lV0uRY1WcBDZ-6e_1qd-O0Rw&export=download&format=png");
+  output.addMetaTag("viewport", "width=device-width, initial-scale=1");
+  output.setFaviconUrl(
+    "https://drive.google.com/uc?id=1sYFRJeZZGg5tXPLEpg-1jyD_nnY3ozAd&export=download&format=png"
+  );
   return output;
 }
 
@@ -30,7 +18,7 @@ function handleRequest(user) {
 
   let validatedUserRow = validateUser(user);
   if (!validatedUserRow) {
-    return {valid: false};
+    return { valid: false };
   }
 
   console.log("Validated user");
@@ -45,7 +33,7 @@ function findRowInFile(uin) {
   let file = DriveApp.getFileById(fileId),
     filedata = file.getBlob().getDataAsString(),
     data = JSON.parse(filedata);
-  
+
   return data[uin];
 }
 
@@ -62,14 +50,14 @@ function validateUser(obj) {
   let uinNum = parseInt(uin);
 
   let uinrow = findRowInFile(uinNum);
-  console.log("Got UIN row "+uinrow);
-  if (!uinrow || uinrow < 4) {
+  console.log("Got UIN row " + uinrow);
+  if (!uinrow || uinrow < 5) {
     return null;
   }
 
-  let userRow = pointssheet.getRange(uinrow,1,1,lastcol).getValues()[0];
-  
-  if (userRow[1].toUpperCase() == lastname) {
+  let userRow = pointssheet.getRange(uinrow, 1, 1, lastcol).getValues()[0];
+  let source_lastname = userRow[1].toUpperCase();
+  if (source_lastname == lastname) {
     return userRow;
   }
 
@@ -78,20 +66,22 @@ function validateUser(obj) {
 
 // Return a list of events a user attended based on UIN
 function getEventsForUser(userrow) {
-  
-  let data = pointssheet.getRange(1,1,3,lastcol).getValues();
-  let out = {valid: true};
+  console.log(JSON.stringify(userrow));
+
+  let data = pointssheet.getRange(1, 1, 4, lastcol).getValues();
+  let out = { valid: true };
 
   let uin = userrow[0];
   out.uin = uin;
   out.lastname = userrow[1];
   out.firstname = userrow[2];
-  out.fulfilled = userrow[3];
+  out.fulfilled = userrow[3] == "Yes";
 
   let dates = data[0];
   let names = data[1];
   let social = data[2];
-  let events = []
+  let ids = data[3];
+  let events = [];
 
   let rawdate;
   let date;
@@ -99,78 +89,55 @@ function getEventsForUser(userrow) {
   let indirectdata;
   let rowsFromUin;
 
-  // Return a list of event names
+  // Return a list of event objects
 
   for (let c = 7; c < userrow.length; c++) {
+    // c represents 0-indexed column number
     let points = parseInt(userrow[c]);
     if (!points) {
       continue;
     }
 
-    if (c == 7) {
-      // MaroonBase Excess: find events linked to uin
-      indirectdata = maroonbaseexcess.getRange(2,4,maroonbaseexcess.getLastRow()-1,5).getValues();
-      rowsFromUin = getRowsFromUin(uin, indirectdata);
-      let categories;
-      for (let i = 0; i < rowsFromUin.length; i++) {
-        rawdate = new Date(rowsFromUin[i][2]);
-        rawdate.setFullYear(2022);
-        date = rawdate.toLocaleDateString();
-        categories = rowsFromUin[i][4].split(',');
-        if (categories.includes("Listed in Weekly Email") || categories.includes("None of the Above")) {
-          eventname = `${date} - ${rowsFromUin[i][1]} - <b>ACADEMIC</b>`;
-        } else {
-          eventname = `${date} - ${categories[0]}: ${rowsFromUin[i][1]} - <b>ACADEMIC</b>`;
-        }
-        console.log("MaroonBase Excess result: " + eventname);
-        events.push({
-          'date': date,
-          'event': eventname.trim()
-        });
-      }
-    } else if (c == 8) {
-      // Outside Events: find events linked to uin
-      indirectdata = outsideevents.getRange(2,4,outsideevents.getLastRow()-1,3).getValues();
+    let id = ids[c];
+    let categoryStr = social[c] ? "SOCIAL" : "ACADEMIC";
+
+    if (c <= 8) {
+      // Outside Events or Outside Social: find events linked to uin
+      let outsidesheet = ss.getSheetByName(id);
+      indirectdata = outsidesheet
+        .getRange(2, 4, outsidesheet.getLastRow() - 1, 7)
+        .getValues();
       rowsFromUin = getRowsFromUin(uin, indirectdata);
       for (let i = 0; i < rowsFromUin.length; i++) {
+        if (!rowsFromUin[i][6]) continue;
         rawdate = new Date(rowsFromUin[i][2]);
-        rawdate.setFullYear(2022);
+        rawdate.setFullYear(2023);
         date = rawdate.toLocaleDateString();
-        eventname = `${date} - ${rowsFromUin[i][1]} - <b>ACADEMIC</b>`;
-        console.log("Outside Events result: " + eventname);
+        eventname = `${date} - ${rowsFromUin[i][1]} - <b>${categoryStr}</b>`;
+        console.log("Outside result: " + eventname);
         events.push({
-          'date': date,
-          'event': eventname.trim()
+          date: date,
+          event: rowsFromUin[i][1].trim(),
+          social: social[c],
+          points: 1,
         });
       }
-
-
-    } else if (c == 9) {
-      // Extra Social Points: find events linked to uin
-      // Sheet does not exist yet
-      
-      // indirectdata = outsideevents.getRange(2,3,outsideevents.getLastRow()-1,6).getValues();
-      // rowsFromUin = getRowsFromUin(uin, indirectdata);
-      // for (let i = 0; i < rowsFromUin.length; i++) {
-      //   rawdate = new Date(rowsFromUin[i][2]);
-      //   rawdate.setFullYear(2022);
-      //   date = rawdate.toLocaleDateString();
-      //   eventname = date + " - " + rowsFromUin[i][3] + " - <b>SOCIAL</b>"
-      //   events.push(eventname.trim());
-      // }
-
     } else {
       // Regular event: get data from header columns
       rawdate = new Date(dates[c]);
-      rawdate.setFullYear(2022);
+      rawdate.setFullYear(2023);
       date = rawdate.toLocaleDateString();
-      eventname = `${date} - ${names[c]} - <b>${(social[c] ? "SOCIAL" : "ACADEMIC")}</b>`;
+      eventname = `${date} - ${names[c]} - <b>${categoryStr}</b>`;
+      // eventname = names[c].trim()
       if (points > 100) {
-        eventname = `${eventname} (x${points/100})`;
+        eventname = `${eventname} (x${points / 100})`;
       }
+
       events.push({
-        'date': date,
-        'event': eventname.trim()
+        date: date,
+        event: names[c].trim(),
+        social: social[c],
+        points: points / 100,
       });
     }
   }
@@ -178,37 +145,43 @@ function getEventsForUser(userrow) {
   // sort events by date
   events.sort((a, b) => {
     return new Date(a.date) - new Date(b.date);
-  })
-  let sortedEvents = []
-  events.forEach(e => {sortedEvents.push(e.event)});
-  
-  out.events = sortedEvents;
+  });
+  // let sortedEvents = []
+  // events.forEach(e => {sortedEvents.push(e.event)});
+
+  out.events = events;
   console.log(JSON.stringify(out));
 
   return out;
 }
 
-// Finds all rows in 2D data where the first element is uin, and returns them
+// Finds all rows in 2D data where the first element equals uin, and returns them
 function getRowsFromUin(uin, data) {
-  let out = []
-  let lastcol = data[0].length-1;
+  let out = [];
+  let lastcol = data[0].length - 1;
   for (let i = 0; i < data.length; i++) {
     if (data[i][0] == uin && data[i][lastcol]) out.push(data[i]);
   }
-  console.log("Got row from UIN: " + JSON.stringify(out));
+  console.log("Got rows from UIN: " + JSON.stringify(out));
   return out;
 }
 
 // Convert the first column of the masterlist into a JSON map
 // to make searching for a UIN in the sheet much faster
 function createLookupFile() {
-  let data = pointssheet.getRange(4,1,pointssheet.getLastRow()-3).getValues();
+  let data = pointssheet
+    .getRange(frozenRows + 1, 1, pointssheet.getLastRow() - frozenRows)
+    .getValues();
   let out = {};
   for (let i = 0; i < data.length; i++) {
-    out[data[i][0]] = i+4;
+    out[data[i][0]] = i + frozenRows + 1;
   }
   let folder = DriveApp.getFolderById("1DIiSrBIFg7oxeywkT7PnUsPnbaqa5TGX"); // HSC Artifacts folder
-  let newFile = DriveApp.createFile("member_row_spring2022", JSON.stringify(out), MimeType.PLAIN_TEXT);
+  let newFile = DriveApp.createFile(
+    "member_row_spring2023",
+    JSON.stringify(out),
+    MimeType.PLAIN_TEXT
+  );
   props.setProperty("lookupFile", newFile.getId());
   newFile.moveTo(folder);
   console.log(newFile.getId());
@@ -217,11 +190,11 @@ function createLookupFile() {
 let lock = LockService.getDocumentLock();
 // Get the next row for logging a request
 function setUpLog() {
-  let logsheet = ss.getSheetByName("Request Log")
+  let logsheet = ss.getSheetByName("Request Log");
   let lastrow = logsheet.getLastRow();
   lock.waitLock(10000);
   logsheet.insertRowAfter(lastrow);
-  let range = logsheet.getRange(lastrow+1,1,1,5);
+  let range = logsheet.getRange(lastrow + 1, 1, 1, 5);
   return range;
 }
 
@@ -229,7 +202,15 @@ function setUpLog() {
 function logRequest(req) {
   let range = setUpLog();
 
-  range.setValues([[new Date().toLocaleString(), req.uin, req.firstname+" "+req.lastname, req.fulfilled, JSON.stringify(req.events)]])
+  range.setValues([
+    [
+      new Date().toLocaleString(),
+      req.uin,
+      req.firstname + " " + req.lastname,
+      req.fulfilled,
+      JSON.stringify(req.events).replace("},{", `},\n{`),
+    ],
+  ]);
   range.setBackground("white");
   range.setFontColor("black");
   SpreadsheetApp.flush();
@@ -239,7 +220,15 @@ function logRequest(req) {
 function logFailure(req) {
   let range = setUpLog();
 
-  range.setValues([[new Date().toLocaleString(), JSON.stringify(req), "", "", "Invalid Request"]]);
+  range.setValues([
+    [
+      new Date().toLocaleString(),
+      JSON.stringify(req),
+      "",
+      "",
+      "Invalid Request",
+    ],
+  ]);
   range.setBackground("red");
   range.setFontColor("white");
   SpreadsheetApp.flush();
@@ -247,8 +236,9 @@ function logFailure(req) {
 }
 
 function include(filename) {
-  return HtmlService.createHtmlOutputFromFile("tracker/"+filename)
-    .getContent();
+  return HtmlService.createHtmlOutputFromFile(
+    "tracker/" + filename
+  ).getContent();
 }
 
 function outputLookupFile() {

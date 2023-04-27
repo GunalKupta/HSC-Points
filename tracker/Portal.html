@@ -1,57 +1,69 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <base target="_top">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <base target="_top" />
 
     <title>HSC Points Tracker</title>
 
     <?!= include('Styles'); ?>
-
   </head>
   <body>
-
-    <a href="https://tamuhsc.weebly.com/" target="_blank"><img class="logo" src="https://drive.google.com/uc?export=view&id=1b8teMvU_8GL0-A4K4_Kwo1SnGInLEzba"></a> 
+    <a href="https://tamuhsc.weebly.com/" target="_blank"
+      ><img class="logo" src="https://i.imgur.com/PGTuKCZ.png"
+    /></a>
 
     <div id="content">
+      <h1>Honors Student Council Points Tracker - Spring '23</h1>
 
-      <h1>Honors Student Council Points Tracker - Spring '22</h1>
-      
       <div id="headercontent">
-
         <form id="pointsform">
           <label for="lastname">Last name:</label>
-          <input type="text" id="lastname" name="lastname" required="required">
+          <input
+            type="text"
+            id="lastname"
+            name="lastname"
+            required="required"
+            autofocus
+          />
           <label for="uin">UIN:</label>
-          <input type="text" id="uin" name="uin" required="required">
+          <input type="text" id="uin" name="uin" required="required" />
           <div class="centercontent">
-            <input type="submit" id="submitbutton">
+            <input type="submit" id="submitbutton" />
           </div>
         </form>
       </div>
 
       <div id="requirements">
-        <p>Members are required to attend two events each semester in order to be considered active participants in HSC. One of the events must be <b>ACADEMIC</b>, and the other can be either <b>ACADEMIC</b> or <b>SOCIAL</b>. Holding active status is only a program requirement for students in the University Honors Program.</p>
+        <p>
+          Members are required to attend two events each semester in order to be
+          considered active participants in HSC. One of the events must be
+          <b>ACADEMIC</b>, and the other can be either <b>ACADEMIC</b> or
+          <b>SOCIAL</b>. Holding active status is only a program requirement for
+          students in the University Honors Program.
+        </p>
       </div>
 
-      <br>
-      <hr>
+      <br />
+      <hr />
 
       <div id="output">
         <p id="results"></p>
       </div>
-      <br>
+      <br />
 
-      <p id="footnote" hidden>Please allow up to 72 hours after your point submission for it to appear if it was an approved event.</p>
-
+      <p id="footnote" hidden>
+        Please allow up to 3 business days after your point submission for it to
+        appear if it was an approved event.
+      </p>
     </div>
 
     <div id="footer">
-      <a href="https://github.com/GunalKupta/HSC-Points" target="_blank"><p>C/O <b>Kunal Gupta</b> for HSC</p></a>
+      <a href="https://github.com/GunalKupta/HSC-Points" target="_blank"
+        ><p>C/O <b>Kunal Gupta</b> for HSC</p></a
+      >
     </div>
-
   </body>
 
   <?!= include('JavaScript'); ?>
-
 </html>
